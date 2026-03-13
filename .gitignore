@@ -1,0 +1,29 @@
+# Environment files with secrets
+# 包含密碼的環境檔案
+.env
+
+# Data directories (bind mounts)
+# 資料目錄（綁定掛載）
+data/
+
+# Backup files (store externally)
+# 備份檔案（請存放於外部）
+*.tar.gz
+*.sql
+backups/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Vibe images
+.vibe-images/
