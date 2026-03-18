@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+  labels:
+    app: nextcloud
+    component: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+      component: app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+        component: app
+    spec:
+      containers:
+        - name: nextcloud
+          image: nextcloud:stable
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: nextcloud-config
+            - secretRef:
+                name: nextcloud-secret
+          volumeMounts:
+            - name: nextcloud-html
+              mountPath: /var/www/html
+            - name: nextcloud-data
+              mountPath: /var/www/html/data
+          livenessProbe:
+            httpGet:
+              path: /status.php
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /status.php
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /status.php
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+      volumes:
+        - name: nextcloud-html
+          persistentVolumeClaim:
+            claimName: nextcloud-html
+        - name: nextcloud-data
+          persistentVolumeClaim:
+            claimName: nextcloud-data

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cron
+  namespace: nextcloud
+  labels:
+    app: nextcloud
+    component: cron
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+      component: cron
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+        component: cron
+    spec:
+      containers:
+        - name: cron
+          image: nextcloud:stable
+          command:
+            - /cron.sh
+          envFrom:
+            - configMapRef:
+                name: nextcloud-config
+            - secretRef:
+                name: nextcloud-secret
+          volumeMounts:
+            - name: nextcloud-html
+              mountPath: /var/www/html
+            - name: nextcloud-data
+              mountPath: /var/www/html/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: nextcloud-html
+          persistentVolumeClaim:
+            claimName: nextcloud-html
+        - name: nextcloud-data
+          persistentVolumeClaim:
+            claimName: nextcloud-data
