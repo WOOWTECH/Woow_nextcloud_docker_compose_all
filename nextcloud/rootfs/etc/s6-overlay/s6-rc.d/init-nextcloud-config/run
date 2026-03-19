@@ -88,9 +88,10 @@ done
 echo "PostgreSQL is ready"
 
 # Ensure the nextcloud database exists (in case initdb didn't create it)
-if ! s6-setuidgid postgres psql -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${POSTGRES_DB:-nextcloud}"; then
+# Note: initdb creates POSTGRES_USER as the superuser, so we must use -U to specify it
+if ! s6-setuidgid postgres psql -U "${POSTGRES_USER:-nextcloud}" -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${POSTGRES_DB:-nextcloud}"; then
     echo "Creating database ${POSTGRES_DB:-nextcloud}..."
-    s6-setuidgid postgres createdb -O "${POSTGRES_USER:-nextcloud}" "${POSTGRES_DB:-nextcloud}" 2>/dev/null || true
+    s6-setuidgid postgres createdb -U "${POSTGRES_USER:-nextcloud}" -O "${POSTGRES_USER:-nextcloud}" "${POSTGRES_DB:-nextcloud}" 2>/dev/null || true
 fi
 
 # create folders

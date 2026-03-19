@@ -26,12 +26,20 @@ fi
 echo "Initializing PostgreSQL database..."
 
 # Initialize the database cluster
+# Use a temp file for password instead of process substitution
+# (process substitution /dev/fd/N is not accessible after s6-setuidgid)
+PW_FILE="$(mktemp)"
+printf "%s\n" "${POSTGRES_PASSWORD}" > "$PW_FILE"
+chmod 644 "$PW_FILE"
+
 s6-setuidgid postgres initdb \
     --username="${POSTGRES_USER}" \
-    --pwfile=<(printf "%s\n" "${POSTGRES_PASSWORD}") \
+    --pwfile="$PW_FILE" \
     --encoding=UTF8 \
     --locale=C \
     -D "${PGDATA}"
+
+rm -f "$PW_FILE"
 
 # Configure pg_hba.conf for local connections
 cat >> "${PGDATA}/pg_hba.conf" <<-EOF
@@ -45,13 +53,17 @@ EOF
 # Configure postgresql.conf for local-only access
 sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = 'localhost'!" "${PGDATA}/postgresql.conf"
 
-# Start temporary server to create the database
-s6-setuidgid postgres pg_ctl -D "${PGDATA}" -o "-c listen_addresses='localhost'" -w start
+# Create log directory and start temporary server to create the database
+mkdir -p /config/log/postgres
+chown postgres:postgres /config/log/postgres
+s6-setuidgid postgres pg_ctl -D "${PGDATA}" -o "-c listen_addresses='localhost'" -w start -l /config/log/postgres/init.log
 
 # Create the nextcloud database if it doesn't exist
-s6-setuidgid postgres psql -v ON_ERROR_STOP=1 --username="${POSTGRES_USER}" <<-EOSQL
-    SELECT 'CREATE DATABASE ${POSTGRES_DB}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${POSTGRES_DB}')\gexec
-EOSQL
+DB_EXISTS=$(s6-setuidgid postgres psql -U "${POSTGRES_USER}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB}';" 2>/dev/null || true)
+if [ "$DB_EXISTS" != "1" ]; then
+    s6-setuidgid postgres createdb -U "${POSTGRES_USER}" -O "${POSTGRES_USER}" "${POSTGRES_DB}"
+    echo "Database '${POSTGRES_DB}' created."
+fi
 
 # Stop temporary server
 s6-setuidgid postgres pg_ctl -D "${PGDATA}" -m fast -w stop
