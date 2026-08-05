@@ -1,44 +1,24 @@
-# Woow Nextcloud
+# Woow nextcloud — MOVED / 已遷移
 
-Nextcloud — file sync, collaboration and cloud storage for self-hosted deployment.
+> [!IMPORTANT]
+> **This repository has been split into per-platform repositories and is now
+> archived.** The branch-per-platform layout is retired; each deployment now
+> lives in its own repo:
+>
+> | Platform | New repository | Replaces branch |
+> |----------|----------------|-----------------|
+> | Docker / Podman Compose | [**Woow_podman_nextcloud**](https://github.com/WOOWTECH/Woow_podman_nextcloud) | `podman` |
+> | K3s / Kubernetes (now a **Helm chart**) | [**Woow_k3s_nextcloud**](https://github.com/WOOWTECH/Woow_k3s_nextcloud) | `k3s` |
+> | Home Assistant add-on | [**Woow_ha_nextcloud**](https://github.com/WOOWTECH/Woow_ha_nextcloud) | `ha` |
+>
+> **Home Assistant users:** remove this repository's URL from your add-on
+> repositories and add the new one instead — archived repos never receive updates.
+>
+> 本倉庫已依部署平台拆分為獨立倉庫並封存，原分支內容（含完整 git 歷史）已遷移至
+> 上表新倉庫；K3s 版本並已改為 Helm chart。HA add-on 使用者請移除本倉庫網址，
+> 改加入新倉庫，否則不會再收到更新。
 
-## Deployment Options
+---
 
-| Platform | Branch | Description |
-|----------|--------|-------------|
-| Docker / Podman | [`podman`](../../tree/podman) | Docker Compose with PostgreSQL |
-| Kubernetes (K3s) | [`k3s`](../../tree/k3s) | K8s manifests with Kustomize |
-| Home Assistant | [`ha`](../../tree/ha) | HA add-on with one-click install |
-
-## Quick Start
-
-Choose your platform and switch to the corresponding branch for deployment instructions.
-
-### Docker / Podman
-```bash
-git clone -b podman https://github.com/WOOWTECH/Woow_nextcloud_docker_compose_all.git
-cd Woow_nextcloud_docker_compose_all
-cp .env.example .env
-docker compose up -d
-```
-
-### Kubernetes (K3s)
-```bash
-git clone -b k3s https://github.com/WOOWTECH/Woow_nextcloud_docker_compose_all.git
-cd Woow_nextcloud_docker_compose_all
-kubectl apply -k .
-```
-
-### Home Assistant
-[![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FWOOWTECH%2FWoow_nextcloud_docker_compose_all)
-
-## Features
-
-- Nextcloud 33.0.0 with PostgreSQL 16 (pgvector)
-- Built-in Redis caching
-- Nginx reverse proxy
-- Automatic SSL certificate management
-
-## License
-
-See [LICENSE](LICENSE) for details.
+The original branches remain readable here for reference, but all future
+development happens in the new repositories.
